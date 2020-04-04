@@ -39,6 +39,9 @@ app = Flask(__name__)
 if __name__ == '__main__':
     app.run(debug=True)
     
+@app.route('/', methods=['GET'])
+def home():
+  return jsonify({"msg": "ok"}), 200
 
 @app.route('/commands/home', methods=['POST'])
 def commands_home():  
@@ -115,19 +118,7 @@ def killall():
 
 
 @app.route('/subscriptions/events', methods=['POST'])
-def main():
-  slack_payload = request.json
-
-  try:
-    slack_payload['event']['view']['blocks'][2]['accessory']['value']
-    return jsonify({"msg": "ok"})
-  except:
-    SlackAppView.update("default", slack_payload['event']['user'])
-    return jsonify({"msg": "ok"})
-
-
-@app.route('/subscriptions/event2', methods=['POST'])
-def slack_():
+def slack_events():
   slack_payload = request.json
 
   try:
@@ -138,7 +129,7 @@ def slack_():
     return jsonify({"msg": "ok"})
   finally:
     return jsonify({"challenge": slack_payload['challenge']})
-  
+
 
 @app.route('/spotify/callback', methods=['GET'])
 def login_callback():
