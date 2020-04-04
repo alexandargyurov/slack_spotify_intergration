@@ -1,5 +1,13 @@
+from dotenv import load_dotenv
+
 import requests
 import json
+import os
+
+load_dotenv()
+
+SLACK_ACCESS_TOKEN = os.getenv("SLACK_ACCESS_TOKEN")
+SLACK_USER_ACCESS_TOKEN = os.getenv("SLACK_USER_ACCESS_TOKEN")
 
 def update(content, user_id, code='none'):
     payload = {
@@ -10,8 +18,13 @@ def update(content, user_id, code='none'):
     }
 
     url = 'https://slack.com/api/views.publish'
-    headers = {'Authorization': 'Bearer xoxb-29202147252-1035321106263-8eWkq5Z8liJt7wK1RdyJlTFN', 'Content-Type': 'application/json'}
+    headers = {'Authorization': 'Bearer ' + SLACK_USER_ACCESS_TOKEN, 'Content-Type': 'application/json'}
     requests.post(url, data=json.dumps(payload[content]), headers=headers)
+
+def update_slack_status(payload):
+  url = 'https://slack.com/api/users.profile.set'
+  headers = {'Authorization': 'Bearer ' + SLACK_ACCESS_TOKEN, 'Content-Type': 'application/json'}
+  requests.post(url, data=json.dumps(payload), headers=headers)
 
 def default(user_id):
   return {

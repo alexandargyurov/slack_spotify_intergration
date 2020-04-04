@@ -3,22 +3,29 @@ from multiprocessing import Process, current_process
 
 from tekore import Spotify, Credentials, util, scope
 from tekore.scope import scopes, every
-from tekore.util import prompt_for_user_token, request_client_token, config_from_file
+from tekore.util import prompt_for_user_token, request_client_token, config
 from tekore.sender import PersistentSender
+from dotenv import load_dotenv
 
 import requests
 import json
 import webbrowser
-import requests
 import os
 import time
 import signal
 import logging
+import time
 
 import slack_app_views as SlackAppView
 
-config = config_from_file("config.ini")
-cred = Credentials(*config)
+load_dotenv()
+
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+SPOTIFY_REDIRECT_URL = os.getenv("SPOTIFY_REDIRECT_URL")
+SLACK_APP_ID = os.getenv("SLACK_APP_ID")
+
+cred = Credentials(client_id=SPOTIFY_CLIENT_ID, client_secret=SPOTIFY_CLIENT_SECRET, redirect_uri=SPOTIFY_REDIRECT_URL)
 app_token = cred.request_client_token()
 
 spotify = Spotify(token=app_token, sender=PersistentSender())
@@ -40,13 +47,22 @@ def commands_home():
   user_id = str(slack_payload['user']['id'])
 
   if button_values[0] == 'initialise':
-    webbrowser.open("https://accounts.spotify.com/authorize?client_id=36cec683cc8d48cdbd51d0210d37bbf5&response_type=code&redirect_uri=http%3A%2F%2F77.98.167.224:4000%2Fspotify%2Fcallback&scope=user-read-playback-state&state=" + user_id)
+    webbrowser.open("https://accounts.spotify.com/authorize?client_id=" + SPOTIFY_CLIENT_ID + "&response_type=code&redirect_uri=" + SPOTIFY_REDIRECT_URL + "&scope=user-read-playback-state&state=" + user_id)
     return jsonify({"msg": "ok"}), 200
 
   elif button_values[0] == 'disconnect_me':
     for process in processes:
       if str(process.name) == user_id:
         os.kill(process.pid, signal.SIGTERM)
+
+    payload = {
+      "profile": {
+          "status_text": "",
+          "status_emoji": ":musical_note:",
+          "status_expiration": int(time.time())
+      }
+    }
+    SlackAppView.update_slack_status(payload)
 
     SlackAppView.update("default", slack_payload['user']['id'])
     return jsonify({"msg": "ok"}), 200
@@ -69,6 +85,15 @@ def commands_home():
     for process in processes:
       if str(process.name) == user_id:
         os.kill(process.pid, signal.SIGTERM)
+
+    payload = {
+      "profile": {
+          "status_text": "",
+          "status_emoji": ":musical_note:",
+          "status_expiration": int(time.time())
+      }
+    }
+    SlackAppView.update_slack_status(payload)
 
     SlackAppView.update("disable_listen", slack_payload['user']['id'], button_values[1])
     return jsonify({"msg": "ok"}), 200
@@ -109,7 +134,7 @@ def login_callback():
   token = cred.request_user_token(code)
 
   SlackAppView.update("disable_listen", user_id, token)
-  return redirect("https://slack.com/app_redirect?app=A010LFE0WKC", code=302)
+  return redirect("https://slack.com/app_redirect?app=" + SLACK_APP_ID, code=302)
 
 
 def poll_spotify_current_song(spotify_token, user_id):
@@ -128,7 +153,7 @@ def poll_spotify_current_song(spotify_token, user_id):
         }
       }
 
-      slack_status(payload)
+      SlackAppView.update_slack_status(payload)
       time.sleep(15)
 
     except Exception:
@@ -139,15 +164,9 @@ def poll_spotify_current_song(spotify_token, user_id):
             "status_expiration": 1
         }
       }
-      slack_status(payload)
+      SlackAppView.update_slack_status(payload)
 
       time.sleep(15)
-
-
-def slack_status(payload):
-  url = 'https://slack.com/api/users.profile.set'
-  headers = {'Authorization': 'Bearer xoxp-29202147252-604304230050-1033309457056-76513a98207f487f8bbfab48422b7119', 'Content-Type': 'application/json'}
-  requests.post(url, data=json.dumps(payload), headers=headers)
 
 
 def remove_process(pid):
