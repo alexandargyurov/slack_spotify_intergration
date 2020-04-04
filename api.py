@@ -37,7 +37,7 @@ processes = []
 app = Flask(__name__)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
     
 @app.route('/', methods=['GET'])
 def home():
