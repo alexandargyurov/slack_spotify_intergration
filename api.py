@@ -126,6 +126,20 @@ def main():
     return jsonify({"msg": "ok"})
 
 
+@app.route('/subscriptions/event2', methods=['POST'])
+def slack_():
+  slack_payload = request.json
+
+  try:
+    slack_payload['event']['view']['blocks'][2]['accessory']['value']
+    return jsonify({"msg": "ok"})
+  except:
+    SlackAppView.update("default", slack_payload['event']['user'])
+    return jsonify({"msg": "ok"})
+  finally:
+    return jsonify({"challenge": slack_payload['challenge']})
+  
+
 @app.route('/spotify/callback', methods=['GET'])
 def login_callback():
   code = request.args.get('code', None)
