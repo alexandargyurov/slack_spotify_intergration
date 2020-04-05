@@ -54,7 +54,7 @@ def commands_home():
   elif button_values[0] == 'disconnect_me':
     for process in processes:
       if str(process.name) == user_id:
-        os.kill(process.pid, signal.SIGTERM)
+        os.kill(process.pid, signal.SIGKILL)
 
     print(processes)
 
@@ -87,7 +87,7 @@ def commands_home():
   elif button_values[0] == 'disable_listen':
     for process in processes:
       if str(process.name) == user_id:
-        os.kill(process.pid, signal.SIGTERM)
+        os.kill(process.pid, signal.SIGKILL)
 
     print(processes)
 
@@ -113,7 +113,7 @@ def killall():
     pid = int(request.args.get('pid', ''))
 
     try:
-      os.kill(pid, signal.SIGTERM)
+      os.kill(pid, signal.SIGKILL)
       return jsonify({"error": "Process successfully stopped"}), 200
     except ProcessLookupError:
       return jsonify({"error": "No Process found with given PID"}), 500
@@ -152,9 +152,6 @@ def login_callback():
 
 
 def poll_spotify_current_song(spotify_token, user_id):
-  pid = current_process().pid
-  logging.warn(f"PROCESS STARTING WITH #{pid} PID")
-
   while True:
     try:
       spotify_data = (requests.get("https://api.spotify.com/v1/me/player", headers={"Authorization": "Bearer " + str(spotify_token)})).json()
