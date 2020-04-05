@@ -55,7 +55,7 @@ def commands_home():
   elif button_values[0] == 'disconnect_me':
     for process in processes:
       if str(process.name) == user_id:
-        subprocess.call("kill -9 " + process.pid)
+        subprocess.call("kill -9 " + str(process.pid))
 
     print(processes)
 
@@ -88,7 +88,7 @@ def commands_home():
   elif button_values[0] == 'disable_listen':
     for process in processes:
       if str(process.name) == user_id:
-        subprocess.call("kill -9 " + process.pid)
+        subprocess.call("kill -9 " + str(process.pid))
         logging.warn(f"SHOULD HAVE KILLED PROCESS {process.pid}")
 
     print(processes)
@@ -115,7 +115,7 @@ def killall():
     pid = int(request.args.get('pid', ''))
 
     try:
-      subprocess.call("kill -9 " + process.pid)
+      subprocess.call("kill -9 " + str(pid))
       return jsonify({"error": "Process successfully stopped"}), 200
     except ProcessLookupError:
       return jsonify({"error": "No Process found with given PID"}), 500
