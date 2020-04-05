@@ -159,7 +159,7 @@ def poll_spotify_current_song(spotify_token, user_id):
     try:
       spotify_data = (requests.get("https://api.spotify.com/v1/me/player", headers={"Authorization": "Bearer " + str(spotify_token)})).json()
 
-      if spotify['is_playing'] == False:
+      if spotify_data['is_playing'] == False:
         payload = {
           "profile": {
               "status_text": "",
