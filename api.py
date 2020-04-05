@@ -158,15 +158,6 @@ def poll_spotify_current_song(spotify_token, user_id):
       time.sleep(15)
 
     except Exception:
-      payload = {
-        "profile": {
-            "status_text": "",
-            "status_emoji": "",
-            "status_expiration": int(time.time())
-        }
-      }
-      SlackAppView.update_slack_status(payload)
-
       time.sleep(15)
 
 
