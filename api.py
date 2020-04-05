@@ -50,8 +50,7 @@ def commands_home():
   user_id = str(slack_payload['user']['id'])
 
   if button_values[0] == 'initialise':
-    webbrowser.open("https://accounts.spotify.com/authorize?client_id=" + SPOTIFY_CLIENT_ID + "&response_type=code&redirect_uri=" + SPOTIFY_REDIRECT_URL + "&scope=user-read-playback-state&state=" + user_id)
-    return jsonify({"msg": "ok"}), 200
+    return redirect("https://accounts.spotify.com/authorize?client_id=" + SPOTIFY_CLIENT_ID + "&response_type=code&redirect_uri=" + SPOTIFY_REDIRECT_URL + "&scope=user-read-playback-state&state=" + user_id, code=302)
 
   elif button_values[0] == 'disconnect_me':
     for process in processes:
