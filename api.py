@@ -152,6 +152,9 @@ def login_callback():
 
 
 def poll_spotify_current_song(spotify_token, user_id):
+  pid = current_process().pid
+  logging.warn(f"PROCESS STARTING WITH #{pid} PID")
+
   while True:
     try:
       spotify_data = (requests.get("https://api.spotify.com/v1/me/player", headers={"Authorization": "Bearer " + str(spotify_token)})).json()
