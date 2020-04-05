@@ -119,6 +119,7 @@ def killall():
 def slack_events():
   slack_payload = request.json
 
+  print(slack_payload)
   try:
     slack_payload['event']['view']['blocks'][2]['accessory']['value']
     return jsonify({"msg": "ok"})
