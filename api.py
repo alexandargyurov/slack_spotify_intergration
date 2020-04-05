@@ -50,7 +50,7 @@ def commands_home():
   user_id = str(slack_payload['user']['id'])
 
   if button_values[0] == 'initialise':
-    return redirect("https://accounts.spotify.com/authorize?client_id=" + SPOTIFY_CLIENT_ID + "&response_type=code&redirect_uri=" + SPOTIFY_REDIRECT_URL + "&scope=user-read-playback-state&state=" + user_id, code=302)
+    return jsonify({"msg": "ok"}), 200
 
   elif button_values[0] == 'disconnect_me':
     for process in processes:
@@ -127,7 +127,10 @@ def slack_events():
     SlackAppView.update("default", slack_payload['event']['user'])
     return jsonify({"msg": "ok"})
   finally:
-    return jsonify({"challenge": slack_payload['challenge']})
+    try:
+      return jsonify({"challenge": slack_payload['challenge']})
+    except:
+      return jsonify({"error": "Something went wrong"}), 500
 
 
 @app.route('/spotify/callback', methods=['GET'])

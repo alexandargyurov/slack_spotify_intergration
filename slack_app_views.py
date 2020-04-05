@@ -8,6 +8,9 @@ load_dotenv()
 
 SLACK_ACCESS_TOKEN = os.getenv("SLACK_ACCESS_TOKEN")
 SLACK_USER_ACCESS_TOKEN = os.getenv("SLACK_USER_ACCESS_TOKEN")
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_REDIRECT_URL = os.getenv("SPOTIFY_REDIRECT_URL")
+
 
 def update(content, user_id, code='none'):
     payload = {
@@ -32,38 +35,39 @@ def default(user_id):
     "view": { 
         "type":"home",
         "blocks": [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "Hi there, welcome to the *Slack Spotify Bot*! I update your Slack status with the current song you're listening to so friends and colleagues can jam along."
-                    }
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "Connect your Spotify account below to get started!"
-                    }
-                },
-                {
-                    "type": "divider"
-                },
-                {
-                    "type": "actions",
-                    "elements": [
-                        {
-                            "type": "button",
-                            "text": {
-                                "type": "plain_text",
-                                "text": "Connect Spotify Account :musical_note:",
-                                "emoji": True
-                            },
-                            "value": "initialise,none"
-                        }
-                    ]
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "Hi there, welcome to the *Slack Spotify Bot*! I update your Slack status with the current song you're listening to so friends and colleagues can jam along."
                 }
-            ]
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "Connect your Spotify account below to get started!"
+                }
+            },
+            {
+                "type": "divider"
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {
+                            "type": "plain_text",
+                            "text": "Connect Spotify Account :musical_note:",
+                            "emoji": True
+                        },
+                        "url": "https://accounts.spotify.com/authorize?client_id=" + SPOTIFY_CLIENT_ID + "&response_type=code&redirect_uri=" + SPOTIFY_REDIRECT_URL + "&scope=user-read-playback-state&state=" + user_id,
+                        "value": "initialise,none"
+                    }
+                ]
+            }
+        ]
         }
     }
 
