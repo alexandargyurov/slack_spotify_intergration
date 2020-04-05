@@ -37,14 +37,14 @@ processes = []
 app = Flask(__name__)
 
 if __name__ == '__main__':
-    app.run()
-    
+    app.run(host='0.0.0.0')
+
 @app.route('/', methods=['GET'])
 def home():
   return jsonify({"msg": "ok"}), 200
 
 @app.route('/commands/home', methods=['POST'])
-def commands_home():  
+def commands_home():
   slack_payload = json.loads(request.form.to_dict()['payload'])
   button_values = slack_payload['actions'][0]['value'].split(",")
   user_id = str(slack_payload['user']['id'])
@@ -55,9 +55,8 @@ def commands_home():
   elif button_values[0] == 'disconnect_me':
     for process in processes:
       if str(process.name) == user_id:
-        subprocess.call("kill -9 " + str(process.pid))
-
-    print(processes)
+        os.kill(process.pid, signal.SIGKILL)
+        remove_process(process.pid)
 
     payload = {
       "profile": {
@@ -80,7 +79,7 @@ def commands_home():
     process = Process(target=poll_spotify_current_song, args=(button_values[1].strip(), user_id), name=user_id)
     process.start()
 
-    processes.append(process)  
+    processes.append(process)
 
     SlackAppView.update("enable_listen", slack_payload['user']['id'], button_values[1])
     return jsonify({"msg": "ok"}), 200
@@ -88,10 +87,8 @@ def commands_home():
   elif button_values[0] == 'disable_listen':
     for process in processes:
       if str(process.name) == user_id:
-        subprocess.call("kill -9 " + str(process.pid))
-        logging.warn(f"SHOULD HAVE KILLED PROCESS {process.pid}")
-
-    print(processes)
+        os.kill(process.pid, signal.SIGKILL)
+        remove_process(process.pid)
 
     payload = {
       "profile": {
@@ -115,7 +112,8 @@ def killall():
     pid = int(request.args.get('pid', ''))
 
     try:
-      subprocess.call("kill -9 " + str(pid))
+      os.kill(pid, signal.SIGKILL)
+      remove_process(pid)
       return jsonify({"error": "Process successfully stopped"}), 200
     except ProcessLookupError:
       return jsonify({"error": "No Process found with given PID"}), 500
@@ -146,7 +144,7 @@ def slack_events():
 def login_callback():
   code = request.args.get('code', None)
   user_id = request.args.get('state', None)
-  
+
   token = cred.request_user_token(code)
 
   SlackAppView.update("disable_listen", user_id, token)
@@ -199,4 +197,6 @@ def poll_spotify_current_song(spotify_token, user_id):
 
 
 def remove_process(pid):
-  if current_process() in processes: processes.remove(current_process())
+    for process in processes[:]:
+        if process.pid == pid:
+            processes.remove(process)
