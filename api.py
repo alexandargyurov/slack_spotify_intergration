@@ -14,7 +14,6 @@ import os
 import time
 import signal
 import logging
-import time
 
 import slack_app_views as SlackAppView
 
@@ -60,7 +59,7 @@ def commands_home():
     payload = {
       "profile": {
           "status_text": "",
-          "status_emoji": ":musical_note:",
+          "status_emoji": "",
           "status_expiration": int(time.time())
       }
     }
@@ -91,7 +90,7 @@ def commands_home():
     payload = {
       "profile": {
           "status_text": "",
-          "status_emoji": ":musical_note:",
+          "status_emoji": "",
           "status_expiration": int(time.time())
       }
     }
@@ -126,11 +125,6 @@ def slack_events():
   except:
     SlackAppView.update("default", slack_payload['event']['user'])
     return jsonify({"msg": "ok"})
-  finally:
-    try:
-      return jsonify({"challenge": slack_payload['challenge']})
-    except:
-      return jsonify({"error": "Something went wrong"}), 500
 
 
 @app.route('/spotify/callback', methods=['GET'])
@@ -167,8 +161,8 @@ def poll_spotify_current_song(spotify_token, user_id):
       payload = {
         "profile": {
             "status_text": "",
-            "status_emoji": ":musical_note:",
-            "status_expiration": 1
+            "status_emoji": "",
+            "status_expiration": int(time.time())
         }
       }
       SlackAppView.update_slack_status(payload)
