@@ -54,6 +54,7 @@ def commands_home():
   elif button_values[0] == 'disconnect_me':
     for process in processes:
       if str(process.name) == user_id:
+        process.terminate()
         os.system(f"kill -9 {process.pid}")
 
     print(processes)
@@ -87,7 +88,9 @@ def commands_home():
   elif button_values[0] == 'disable_listen':
     for process in processes:
       if str(process.name) == user_id:
+        process.terminate()
         os.system(f"kill -9 {process.pid}")
+        logging.warn(f"SHOULD HAVE KILLED PROCESS {process.pid}")
 
     print(processes)
 
@@ -113,7 +116,7 @@ def killall():
     pid = int(request.args.get('pid', ''))
 
     try:
-      os.system(f"kill -9 {process.pid}")
+      os.system(f"kill -9 {pid}")
       return jsonify({"error": "Process successfully stopped"}), 200
     except ProcessLookupError:
       return jsonify({"error": "No Process found with given PID"}), 500
@@ -156,18 +159,30 @@ def poll_spotify_current_song(spotify_token, user_id):
     try:
       spotify_data = (requests.get("https://api.spotify.com/v1/me/player", headers={"Authorization": "Bearer " + str(spotify_token)})).json()
 
-      name = spotify_data['item']['name']
-      artist = spotify_data['item']['artists'][0]['name']
-
-      payload = {
-        "profile": {
-            "status_text": f""""{name}" by {artist}""",
-            "status_emoji": ":musical_note:",
-            "status_expiration": 0
+      if spotify['is_playing'] == False:
+        payload = {
+          "profile": {
+              "status_text": "",
+              "status_emoji": "",
+              "status_expiration": int(time.time())
+          }
         }
-      }
 
-      SlackAppView.update_slack_status(payload)
+        SlackAppView.update_slack_status(payload)
+      else:
+        name = spotify_data['item']['name']
+        artist = spotify_data['item']['artists'][0]['name']
+
+        payload = {
+          "profile": {
+              "status_text": f""""{name}" by {artist}""",
+              "status_emoji": ":musical_note:",
+              "status_expiration": 0
+          }
+        }
+
+        SlackAppView.update_slack_status(payload)
+
       time.sleep(15)
 
     except Exception:
