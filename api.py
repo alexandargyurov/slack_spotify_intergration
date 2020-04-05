@@ -56,6 +56,8 @@ def commands_home():
       if str(process.name) == user_id:
         os.kill(process.pid, signal.SIGTERM)
 
+    print(processes)
+
     payload = {
       "profile": {
           "status_text": "",
@@ -87,6 +89,8 @@ def commands_home():
       if str(process.name) == user_id:
         os.kill(process.pid, signal.SIGTERM)
 
+    print(processes)
+
     payload = {
       "profile": {
           "status_text": "",
@@ -113,6 +117,14 @@ def killall():
       return jsonify({"error": "Process successfully stopped"}), 200
     except ProcessLookupError:
       return jsonify({"error": "No Process found with given PID"}), 500
+
+
+@app.route('/processess', methods=['GET'])
+def show_processess():
+    for process in processes:
+      print(process)
+
+    return jsonify({"msg": "ok"}), 200
 
 
 @app.route('/subscriptions/events', methods=['POST'])
@@ -159,6 +171,16 @@ def poll_spotify_current_song(spotify_token, user_id):
       time.sleep(15)
 
     except Exception:
+      payload = {
+        "profile": {
+            "status_text": "",
+            "status_emoji": "",
+            "status_expiration": int(time.time())
+        }
+      }
+
+      SlackAppView.update_slack_status(payload)
+
       time.sleep(15)
 
 
