@@ -14,6 +14,7 @@ import os
 import time
 import signal
 import logging
+import subprocess
 
 import slack_app_views as SlackAppView
 
@@ -54,8 +55,7 @@ def commands_home():
   elif button_values[0] == 'disconnect_me':
     for process in processes:
       if str(process.name) == user_id:
-        process.terminate()
-        os.system(f"kill -9 {process.pid}")
+        subprocess.call(f'kill -9 {process.pid}')
 
     print(processes)
 
@@ -88,8 +88,7 @@ def commands_home():
   elif button_values[0] == 'disable_listen':
     for process in processes:
       if str(process.name) == user_id:
-        process.terminate()
-        os.system(f"kill -9 {process.pid}")
+        subprocess.call(f'kill -9 {process.pid}')
         logging.warn(f"SHOULD HAVE KILLED PROCESS {process.pid}")
 
     print(processes)
@@ -116,7 +115,7 @@ def killall():
     pid = int(request.args.get('pid', ''))
 
     try:
-      os.system(f"kill -9 {pid}")
+      subprocess.call(f'kill -9 {pid}')
       return jsonify({"error": "Process successfully stopped"}), 200
     except ProcessLookupError:
       return jsonify({"error": "No Process found with given PID"}), 500
